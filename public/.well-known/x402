@@ -1,0 +1,397 @@
+{
+  "x402Version": 1,
+  "name": "x402-places",
+  "description": "POI concierge over OpenStreetMap Overpass with optional Yelp enrichment — restaurants, cafes, anything, per query",
+  "homepage": "https://nirholas.github.io/x402-places/",
+  "repository": "https://github.com/nirholas/x402-places",
+  "contact": "nichxbt@gmail.com",
+  "skill": "https://github.com/nirholas/x402-places/blob/main/skill.md",
+  "openapi": "https://github.com/nirholas/x402-places/blob/main/openapi.json",
+  "payment": {
+    "note": "Pay in USDC on Base or Solana — your client picks the rail.",
+    "facilitator": "https://x402.org/facilitator",
+    "rails": [
+      {
+        "rail": "evm",
+        "network": "base-sepolia",
+        "asset": "USDC",
+        "payTo": "0x40252CFDF8B20Ed757D61ff157719F33Ec332402",
+        "decimals": 6
+      },
+      {
+        "rail": "solana",
+        "network": "solana",
+        "asset": "USDC",
+        "payTo": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW",
+        "decimals": 6
+      }
+    ]
+  },
+  "resources": [
+    {
+      "resource": "GET /search",
+      "description": "Search points of interest around a coordinate (live OpenStreetMap)",
+      "price": "$0.002",
+      "network": "base-sepolia",
+      "networks": [
+        "base-sepolia",
+        "solana"
+      ],
+      "asset": "USDC",
+      "accepts": [
+        {
+          "scheme": "exact",
+          "network": "base-sepolia",
+          "asset": "USDC",
+          "payTo": "0x40252CFDF8B20Ed757D61ff157719F33Ec332402",
+          "maxAmountRequired": "2000",
+          "mimeType": "application/json"
+        },
+        {
+          "scheme": "exact",
+          "network": "solana",
+          "asset": "USDC",
+          "payTo": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW",
+          "maxAmountRequired": "2000",
+          "mimeType": "application/json"
+        }
+      ],
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "source",
+          "query",
+          "count",
+          "places",
+          "retrievedAt"
+        ],
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "overpass"
+            ],
+            "description": "Always `overpass` — live OpenStreetMap data."
+          },
+          "query": {
+            "type": "object",
+            "properties": {
+              "latitude": {
+                "type": "number"
+              },
+              "longitude": {
+                "type": "number"
+              },
+              "radiusM": {
+                "type": "number"
+              },
+              "category": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "limit": {
+                "type": "integer"
+              }
+            }
+          },
+          "count": {
+            "type": "integer"
+          },
+          "retrievedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "places": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "osmType",
+                "osmId",
+                "name",
+                "tags"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "`<osmType>-<osmId>`, e.g. `node-1072800838`. Pass to `/detail/:id`."
+                },
+                "osmType": {
+                  "type": "string",
+                  "enum": [
+                    "node",
+                    "way",
+                    "relation"
+                  ]
+                },
+                "osmId": {
+                  "type": "integer"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "category": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "The `amenity`/`shop`/`leisure`/`tourism` value."
+                },
+                "latitude": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "longitude": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "openingHours": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Raw OSM `opening_hours` expression."
+                },
+                "phone": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "website": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "address": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "cuisine": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tags": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Complete untouched OSM tag set."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "resource": "GET /detail/:id",
+      "description": "Full record for one OpenStreetMap place, plus review enrichment",
+      "price": "$0.002",
+      "network": "base-sepolia",
+      "networks": [
+        "base-sepolia",
+        "solana"
+      ],
+      "asset": "USDC",
+      "accepts": [
+        {
+          "scheme": "exact",
+          "network": "base-sepolia",
+          "asset": "USDC",
+          "payTo": "0x40252CFDF8B20Ed757D61ff157719F33Ec332402",
+          "maxAmountRequired": "2000",
+          "mimeType": "application/json"
+        },
+        {
+          "scheme": "exact",
+          "network": "solana",
+          "asset": "USDC",
+          "payTo": "WwwuGbqHrwF5RG89KhUbmRWEvjnRH9k5kVM5p7T3WwW",
+          "maxAmountRequired": "2000",
+          "mimeType": "application/json"
+        }
+      ],
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "source",
+          "place",
+          "enrichment",
+          "retrievedAt"
+        ],
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "overpass"
+            ]
+          },
+          "retrievedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "place": {
+            "type": "object",
+            "required": [
+              "id",
+              "osmType",
+              "osmId",
+              "name",
+              "tags"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "`<osmType>-<osmId>`, e.g. `node-1072800838`. Pass to `/detail/:id`."
+              },
+              "osmType": {
+                "type": "string",
+                "enum": [
+                  "node",
+                  "way",
+                  "relation"
+                ]
+              },
+              "osmId": {
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              },
+              "category": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The `amenity`/`shop`/`leisure`/`tourism` value."
+              },
+              "latitude": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "longitude": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "openingHours": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Raw OSM `opening_hours` expression."
+              },
+              "phone": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "website": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "address": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cuisine": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tags": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Complete untouched OSM tag set."
+              }
+            }
+          },
+          "enrichment": {
+            "type": "object",
+            "required": [
+              "source",
+              "rating",
+              "reviewCount",
+              "reviews"
+            ],
+            "properties": {
+              "source": {
+                "type": "string",
+                "enum": [
+                  "yelp",
+                  "fixture"
+                ]
+              },
+              "rating": {
+                "type": "number"
+              },
+              "reviewCount": {
+                "type": "integer"
+              },
+              "priceLevel": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "yelpUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "uri"
+              },
+              "note": {
+                "type": "string"
+              },
+              "reviews": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "rating": {
+                      "type": "number"
+                    },
+                    "text": {
+                      "type": "string"
+                    },
+                    "author": {
+                      "type": "string"
+                    },
+                    "createdAt": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,750 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "x402-places",
+    "version": "0.1.0",
+    "description": "POI concierge over OpenStreetMap Overpass with optional Yelp enrichment — restaurants, cafes, anything, per query\n\nEvery paid route returns the purchased artifact in the 200 response body. Pay in USDC on Base or Solana — your client picks the rail.",
+    "license": {
+      "name": "Apache-2.0",
+      "identifier": "Apache-2.0"
+    },
+    "contact": {
+      "name": "nirholas",
+      "email": "nichxbt@gmail.com",
+      "url": "https://github.com/nirholas/x402-places"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4022",
+      "description": "Local development"
+    },
+    {
+      "url": "{baseUrl}",
+      "description": "Deployed instance",
+      "variables": {
+        "baseUrl": {
+          "default": "http://localhost:4022"
+        }
+      }
+    }
+  ],
+  "externalDocs": {
+    "description": "Docs site",
+    "url": "https://nirholas.github.io/x402-places/"
+  },
+  "tags": [
+    {
+      "name": "paid",
+      "description": "x402-paid routes. Artifact returned in the 200 body."
+    },
+    {
+      "name": "free",
+      "description": "Unpaid metadata routes."
+    }
+  ],
+  "paths": {
+    "/search": {
+      "get": {
+        "operationId": "searchPlaces",
+        "summary": "Search points of interest around a coordinate (live OpenStreetMap) ($0.002)",
+        "description": "Search points of interest around a coordinate (live OpenStreetMap)\n\nPaid route — $0.002 in USDC. Pay on Base (EVM) or Solana; the 402 challenge lists both rails.",
+        "tags": [
+          "paid"
+        ],
+        "parameters": [
+          {
+            "name": "lat",
+            "in": "query",
+            "required": true,
+            "description": "Latitude, -90…90.",
+            "schema": {
+              "type": "number"
+            },
+            "example": 41.3851
+          },
+          {
+            "name": "lon",
+            "in": "query",
+            "required": true,
+            "description": "Longitude, -180…180.",
+            "schema": {
+              "type": "number"
+            },
+            "example": 2.1734
+          },
+          {
+            "name": "radius",
+            "in": "query",
+            "required": false,
+            "description": "Search radius in **metres**, 0…5000. Default 500.",
+            "schema": {
+              "type": "number"
+            },
+            "example": 300
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "OSM tag value to filter on — matched against `amenity`, `shop`, `leisure` and `tourism`. e.g. `cafe`, `restaurant`, `pharmacy`, `bar`, `museum`, `bakery`. Omit for any amenity.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "cafe"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum results, 1…50. Default 20.",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 2
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "POIs near the coordinate: name, category, geo, opening hours, phone, website, address, cuisine, full OSM tags",
+            "headers": {
+              "X-PAYMENT-RESPONSE": {
+                "description": "Base64 JSON settlement receipt.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "source",
+                    "query",
+                    "count",
+                    "places",
+                    "retrievedAt"
+                  ],
+                  "properties": {
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "overpass"
+                      ],
+                      "description": "Always `overpass` — live OpenStreetMap data."
+                    },
+                    "query": {
+                      "type": "object",
+                      "properties": {
+                        "latitude": {
+                          "type": "number"
+                        },
+                        "longitude": {
+                          "type": "number"
+                        },
+                        "radiusM": {
+                          "type": "number"
+                        },
+                        "category": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "limit": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "count": {
+                      "type": "integer"
+                    },
+                    "retrievedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "places": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Poi"
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "source": "overpass",
+                  "query": {
+                    "latitude": 41.3851,
+                    "longitude": 2.1734,
+                    "radiusM": 300,
+                    "category": "cafe",
+                    "limit": 2
+                  },
+                  "count": 2,
+                  "places": [
+                    {
+                      "id": "node-1072800838",
+                      "osmType": "node",
+                      "osmId": 1072800838,
+                      "name": "El Cafè D'en Victor",
+                      "category": "cafe",
+                      "latitude": 41.3847931,
+                      "longitude": 2.1767008,
+                      "openingHours": null,
+                      "phone": null,
+                      "website": null,
+                      "address": "12 Carrer de la Tapineria, 08002",
+                      "cuisine": null,
+                      "tags": {
+                        "addr:housenumber": "12",
+                        "addr:postcode": "08002",
+                        "addr:street": "Carrer de la Tapineria",
+                        "amenity": "cafe",
+                        "check_date": "2023-04-23",
+                        "name": "El Cafè D'en Victor",
+                        "outdoor_seating": "yes",
+                        "wheelchair": "yes"
+                      }
+                    },
+                    {
+                      "id": "node-2610015274",
+                      "osmType": "node",
+                      "osmId": 2610015274,
+                      "name": "Chocolate Box",
+                      "category": "cafe",
+                      "latitude": 41.384715,
+                      "longitude": 2.17514,
+                      "openingHours": null,
+                      "phone": null,
+                      "website": null,
+                      "address": "Carrer dels Capellans",
+                      "cuisine": "coffee_shop",
+                      "tags": {
+                        "addr:street": "Carrer dels Capellans",
+                        "amenity": "cafe",
+                        "cuisine": "coffee_shop",
+                        "name": "Chocolate Box",
+                        "outdoor_seating": "no",
+                        "source": "Survey",
+                        "takeaway": "yes"
+                      }
+                    }
+                  ],
+                  "retrievedAt": "2026-08-07T02:40:20.141Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment required (or payment rejected). The body lists both accepted rails.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentRequired"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream data source failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/detail/{id}": {
+      "get": {
+        "operationId": "placeDetail",
+        "summary": "Full record for one OpenStreetMap place, plus review enrichment ($0.002)",
+        "description": "Full record for one OpenStreetMap place, plus review enrichment\n\nPaid route — $0.002 in USDC. Pay on Base (EVM) or Solana; the 402 challenge lists both rails.",
+        "tags": [
+          "paid"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Place id as returned by `/search` — `node-…`, `way-…` or `relation-…`.",
+            "schema": {
+              "type": "string"
+            },
+            "example": "node-1072800838"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The complete OSM record for that place plus `enrichment` — rating, review count, price level and reviews (live Yelp when keyed, fixture otherwise)",
+            "headers": {
+              "X-PAYMENT-RESPONSE": {
+                "description": "Base64 JSON settlement receipt.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "source",
+                    "place",
+                    "enrichment",
+                    "retrievedAt"
+                  ],
+                  "properties": {
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "overpass"
+                      ]
+                    },
+                    "retrievedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "place": {
+                      "$ref": "#/components/schemas/Poi"
+                    },
+                    "enrichment": {
+                      "type": "object",
+                      "required": [
+                        "source",
+                        "rating",
+                        "reviewCount",
+                        "reviews"
+                      ],
+                      "properties": {
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "yelp",
+                            "fixture"
+                          ]
+                        },
+                        "rating": {
+                          "type": "number"
+                        },
+                        "reviewCount": {
+                          "type": "integer"
+                        },
+                        "priceLevel": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "yelpUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "uri"
+                        },
+                        "note": {
+                          "type": "string"
+                        },
+                        "reviews": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "rating": {
+                                "type": "number"
+                              },
+                              "text": {
+                                "type": "string"
+                              },
+                              "author": {
+                                "type": "string"
+                              },
+                              "createdAt": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "source": "overpass",
+                  "place": {
+                    "id": "node-1072800838",
+                    "osmType": "node",
+                    "osmId": 1072800838,
+                    "name": "El Cafè D'en Victor",
+                    "category": "cafe",
+                    "latitude": 41.3847931,
+                    "longitude": 2.1767008,
+                    "openingHours": null,
+                    "phone": null,
+                    "website": null,
+                    "address": "12 Carrer de la Tapineria, 08002",
+                    "cuisine": null,
+                    "tags": {
+                      "addr:housenumber": "12",
+                      "addr:postcode": "08002",
+                      "addr:street": "Carrer de la Tapineria",
+                      "amenity": "cafe",
+                      "check_date": "2023-04-23",
+                      "name": "El Cafè D'en Victor",
+                      "outdoor_seating": "yes",
+                      "wheelchair": "yes"
+                    }
+                  },
+                  "enrichment": {
+                    "source": "fixture",
+                    "rating": 3.4,
+                    "reviewCount": 58,
+                    "priceLevel": "$",
+                    "yelpUrl": null,
+                    "reviews": [
+                      {
+                        "rating": 4,
+                        "text": "A bit crowded at peak hours but worth the wait.",
+                        "author": "demo_user_475",
+                        "createdAt": "2024-02-09T08:35:18.084Z"
+                      },
+                      {
+                        "rating": 3,
+                        "text": "Good value for the neighborhood; portions are generous.",
+                        "author": "demo_user_973",
+                        "createdAt": "2025-01-27T08:21:00.428Z"
+                      },
+                      {
+                        "rating": 3,
+                        "text": "A bit crowded at peak hours but worth the wait.",
+                        "author": "demo_user_353",
+                        "createdAt": "2024-07-25T14:05:24.680Z"
+                      }
+                    ],
+                    "note": "Deterministic fixture enrichment — set YELP_API_KEY for live Yelp data."
+                  },
+                  "retrievedAt": "2026-08-07T02:40:21.454Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment required (or payment rejected). The body lists both accepted rails.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentRequired"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Upstream data source failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "operationId": "serviceInfo",
+        "summary": "Service metadata, live prices, and active payment rails (free)",
+        "tags": [
+          "free"
+        ],
+        "responses": {
+          "200": {
+            "description": "Service metadata.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health",
+        "summary": "Liveness probe (free)",
+        "tags": [
+          "free"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "uptime": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/.well-known/x402": {
+      "get": {
+        "operationId": "discoveryManifest",
+        "summary": "x402 discovery manifest (free)",
+        "tags": [
+          "free"
+        ],
+        "responses": {
+          "200": {
+            "description": "Manifest.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Poi": {
+        "type": "object",
+        "required": [
+          "id",
+          "osmType",
+          "osmId",
+          "name",
+          "tags"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "`<osmType>-<osmId>`, e.g. `node-1072800838`. Pass to `/detail/:id`."
+          },
+          "osmType": {
+            "type": "string",
+            "enum": [
+              "node",
+              "way",
+              "relation"
+            ]
+          },
+          "osmId": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The `amenity`/`shop`/`leisure`/`tourism` value."
+          },
+          "latitude": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "longitude": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "openingHours": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Raw OSM `opening_hours` expression."
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "website": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "address": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cuisine": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tags": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Complete untouched OSM tag set."
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Machine-readable error code."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable description."
+          }
+        }
+      },
+      "PaymentRequirements": {
+        "type": "object",
+        "description": "One accepted payment rail, per the x402 specification.",
+        "required": [
+          "scheme",
+          "network",
+          "maxAmountRequired",
+          "resource",
+          "payTo",
+          "asset"
+        ],
+        "properties": {
+          "scheme": {
+            "type": "string",
+            "enum": [
+              "exact"
+            ]
+          },
+          "network": {
+            "type": "string",
+            "enum": [
+              "base-sepolia",
+              "base",
+              "solana",
+              "solana-devnet"
+            ],
+            "description": "EVM or Solana network this rail settles on."
+          },
+          "maxAmountRequired": {
+            "type": "string",
+            "description": "Price in USDC base units (6 decimals)."
+          },
+          "resource": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "payTo": {
+            "type": "string",
+            "description": "Receive address (0x… for EVM, base58 for Solana)."
+          },
+          "maxTimeoutSeconds": {
+            "type": "integer"
+          },
+          "asset": {
+            "type": "string",
+            "description": "USDC contract address or SPL mint."
+          },
+          "outputSchema": {
+            "type": "object"
+          },
+          "extra": {
+            "type": "object",
+            "description": "EVM: EIP-712 domain (`name`, `version`). Solana: `feePayer`, the sponsor that pays the SOL network fee."
+          }
+        }
+      },
+      "PaymentRequired": {
+        "type": "object",
+        "required": [
+          "x402Version",
+          "accepts"
+        ],
+        "properties": {
+          "x402Version": {
+            "type": "integer",
+            "enum": [
+              1
+            ]
+          },
+          "error": {
+            "type": "string"
+          },
+          "hint": {
+            "type": "string"
+          },
+          "accepts": {
+            "type": "array",
+            "description": "Both rails: USDC on Base and USDC on Solana.",
+            "items": {
+              "$ref": "#/components/schemas/PaymentRequirements"
+            }
+          }
+        }
+      }
+    }
+  }
+}
