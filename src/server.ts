@@ -19,6 +19,7 @@ import {
   usingSuiteDefaultPayTo,
   type RoutePrices,
 } from "./payments.js";
+import { ROUTE_SCHEMAS } from "./schemas.js";
 import { hasYelpKey, parsePoiId, placeDetail, searchPlaces } from "./service.js";
 
 const require = createRequire(import.meta.url);
@@ -31,26 +32,13 @@ const ROUTES: RoutePrices = {
     price: "$0.002",
     description:
       "POI search around a coordinate over OpenStreetMap Overpass. Returns places with opening hours, contact details, address and full OSM tags.",
-    outputSchema: {
-      type: "object",
-      properties: {
-        source: { type: "string", enum: ["overpass"] },
-        count: { type: "integer" },
-        places: { type: "array", items: { type: "object" } },
-      },
-    },
+    outputSchema: ROUTE_SCHEMAS["GET /search"],
   },
   "GET /detail/:id": {
     price: "$0.002",
     description:
       "Full record for one OSM place, plus review enrichment (live Yelp when YELP_API_KEY is set, deterministic fixture otherwise).",
-    outputSchema: {
-      type: "object",
-      properties: {
-        place: { type: "object" },
-        enrichment: { type: "object" },
-      },
-    },
+    outputSchema: ROUTE_SCHEMAS["GET /detail/:id"],
   },
 };
 
@@ -70,10 +58,19 @@ app.get("/.well-known/x402", (_req, res) => {
   res.type("application/json").sendFile(join(publicDir, ".well-known", "x402"));
 });
 
-app.use(express.static(publicDir));
+// `index: false` keeps `GET /` on the handler below, which serves the landing
+// page to browsers and the JSON service descriptor to agents.
+app.use(express.static(publicDir, { index: false }));
 
 // Free: service info.
-app.get("/", (_req, res) => {
+// Content-negotiated — `Accept: text/html` (a browser, or a crawler looking for
+// title/description/favicon/og:image) gets the landing page; everything else,
+// including `Accept: */*`, gets the JSON descriptor.
+app.get("/", (req, res) => {
+  if (req.accepts(["json", "html"]) === "html") {
+    res.sendFile(join(publicDir, "index.html"));
+    return;
+  }
   res.json({
     name: "x402-places",
     description:

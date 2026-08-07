@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="x402-places">
+  <rect width="1200" height="630" fill="#0b0d12"/>
+  <rect x="0" y="0" width="1200" height="6" fill="#22c55e"/>
+  <text x="80" y="250" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="76" font-weight="700" fill="#f2f4f8">x402-places</text>
+  <text x="80" y="320" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="32" fill="#9aa4b2">POI concierge over OpenStreetMap Overpass with optional Yelp enrichment — rest</text>
+  <text x="80" y="380" font-family="system-ui,-apple-system,Segoe UI,sans-serif" font-size="32" fill="#9aa4b2">aurants, cafes, anything, per query</text>
+  <text x="80" y="530" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="30" fill="#22c55e">HTTP 402 · USDC on Base or Solana · pay-per-call</text>
+</svg>
