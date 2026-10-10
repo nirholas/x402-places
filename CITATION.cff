@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+title: "x402-places"
+abstract: "POI concierge over OpenStreetMap Overpass with optional Yelp enrichment: restaurants, cafes, anything, per query, paid in USDC on Base or Solana via x402"
+license: Apache-2.0
+repository-code: "https://github.com/nirholas/x402-places"
+url: "https://three.ws"
+authors:
+  - name: three.ws
+    website: "https://three.ws"
