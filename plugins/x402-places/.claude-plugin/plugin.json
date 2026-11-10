@@ -1,0 +1,18 @@
+{
+  "name": "x402-places",
+  "version": "0.1.0",
+  "description": "Run the x402-places service and find points of interest around a coordinate from OpenStreetMap, with optional Yelp review enrichment, paid via x402.",
+  "author": {
+    "name": "nirholas"
+  },
+  "repository": "https://github.com/nirholas/x402-places",
+  "homepage": "https://nirholas.github.io/x402-places/",
+  "license": "Apache-2.0",
+  "keywords": [
+    "x402",
+    "places",
+    "openstreetmap",
+    "overpass",
+    "yelp"
+  ]
+}

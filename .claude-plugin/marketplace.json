@@ -1,0 +1,22 @@
+{
+  "name": "x402-places",
+  "owner": {
+    "name": "nirholas"
+  },
+  "description": "Run the x402-places service and find points of interest around a coordinate from OpenStreetMap, with optional Yelp review enrichment, paid via x402.",
+  "plugins": [
+    {
+      "name": "x402-places",
+      "source": "./plugins/x402-places",
+      "description": "Run the x402-places service and find points of interest around a coordinate from OpenStreetMap, with optional Yelp review enrichment, paid via x402.",
+      "category": "data",
+      "tags": [
+        "x402",
+        "places",
+        "openstreetmap",
+        "overpass",
+        "yelp"
+      ]
+    }
+  ]
+}
